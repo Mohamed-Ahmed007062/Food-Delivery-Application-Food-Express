@@ -39,6 +39,7 @@ const router = Router();
  *         description: List of meals
  */
 router.get('/', validate(queryMealSchema), MealController.getMeals);
+router.get('/list', validate(queryMealSchema), MealController.getMeals);
 
 /**
  * @openapi

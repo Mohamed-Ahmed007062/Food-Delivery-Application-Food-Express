@@ -1,8 +1,11 @@
 import { Router } from 'express';
 import { UserController } from './user.controller.js';
+import { AuthController } from '../auth/auth.controller.js';
 import { protect, authorize } from '../../middleware/auth.middleware.js';
 
 const router = Router();
+
+router.get('/me', protect, AuthController.getMe);
 
 /**
  * @openapi

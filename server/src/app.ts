@@ -58,8 +58,19 @@ app.use('/api', globalRateLimiter);
 // Swagger Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// Health Check Endpoint
-app.get('/api/v1/health', (_req: Request, res: Response) => {
+// Root Endpoint
+app.get('/', (_req: Request, res: Response) => {
+  res.status(200).json({
+    success: true,
+    message: 'FoodExpress API is running and operational',
+    docs: '/api-docs',
+    health: '/api/v1/health',
+    version: '1.0.0',
+  });
+});
+
+// Health Check Endpoints
+app.get(['/health', '/api/health', '/api/v1/health'], (_req: Request, res: Response) => {
   res.status(200).json({
     success: true,
     message: 'Food Delivery API is healthy and operational',
@@ -69,21 +80,21 @@ app.get('/api/v1/health', (_req: Request, res: Response) => {
   });
 });
 
-// Feature Route Mounts
-app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/restaurants', restaurantRoutes);
-app.use('/api/v1/categories', categoryRoutes);
-app.use('/api/v1/meals', mealRoutes);
-app.use('/api/v1/reviews', reviewRoutes);
-app.use('/api/v1/coupons', couponRoutes);
-app.use('/api/v1/cart', cartRoutes);
-app.use('/api/v1/orders', orderRoutes);
-app.use('/api/v1/analytics', analyticsRoutes);
-app.use('/api/v1/users', userRoutes);
-app.use('/api/v1/upload', uploadRoutes);
+// Feature Route Mounts (Supports both /api/v1/... and legacy /api/... aliases)
+app.use(['/api/v1/auth', '/api/auth'], authRoutes);
+app.use(['/api/v1/restaurants', '/api/restaurants'], restaurantRoutes);
+app.use(['/api/v1/categories', '/api/categories'], categoryRoutes);
+app.use(['/api/v1/meals', '/api/meals', '/api/food'], mealRoutes);
+app.use(['/api/v1/reviews', '/api/reviews'], reviewRoutes);
+app.use(['/api/v1/coupons', '/api/coupons'], couponRoutes);
+app.use(['/api/v1/cart', '/api/cart'], cartRoutes);
+app.use(['/api/v1/orders', '/api/orders'], orderRoutes);
+app.use(['/api/v1/analytics', '/api/analytics'], analyticsRoutes);
+app.use(['/api/v1/users', '/api/users', '/api/user'], userRoutes);
+app.use(['/api/v1/upload', '/api/upload'], uploadRoutes);
 
 // Handle 404 Routes
-app.use('*', (_req: Request, _res: Response, next: NextFunction) => {
+app.use((_req: Request, _res: Response, next: NextFunction) => {
   next(new NotFoundError('Route not found'));
 });
 
