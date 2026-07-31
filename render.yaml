@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: foodexpress-backend
+    env: node
+    region: oregon
+    buildCommand: cd server && npm ci && npm run build
+    startCommand: cd server && node dist/server.js
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: CLIENT_URL
+        sync: false
