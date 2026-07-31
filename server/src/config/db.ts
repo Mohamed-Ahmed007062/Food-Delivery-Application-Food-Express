@@ -3,6 +3,10 @@ import { env } from './env.js';
 import { logger } from '../shared/utils/logger.js';
 
 export const connectDB = async (): Promise<void> => {
+  if (mongoose.connection.readyState === 1) {
+    return;
+  }
+
   mongoose.connection.on('connected', () => {
     logger.info(`🍃 MongoDB Connected: ${mongoose.connection.host}`);
   });
