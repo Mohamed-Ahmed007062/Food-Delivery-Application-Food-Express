@@ -8,15 +8,8 @@ import { NotFoundError } from '../../shared/errors/appError.js';
 import { MealDBService } from '../../shared/services/mealDbService.js';
 import { CouponService } from '../coupons/coupon.service.js';
 
-const DEMO_CART: Partial<ICart> = {
-  _id: '60c72b2f9b1d8b0015f8e9d1' as any,
-  items: [],
-  subtotal: 0,
-  deliveryFee: 0,
-  tax: 0,
-  discount: 0,
-  total: 0,
-};
+
+
 
 export class CartService {
   private static calculateCartTotals(cart: ICart, deliveryFee = 0) {
@@ -29,9 +22,6 @@ export class CartService {
   }
 
   static async getCart(userId: string): Promise<ICart> {
-    if (mongoose.connection.readyState !== 1) {
-      return DEMO_CART as ICart;
-    }
 
     let cart = await Cart.findOne({ user: userId }).populate(
       'restaurant',
@@ -53,9 +43,6 @@ export class CartService {
   }
 
   static async addItem(userId: string, input: AddToCartInput): Promise<ICart> {
-    if (mongoose.connection.readyState !== 1) {
-      return DEMO_CART as ICart;
-    }
 
     let meal: any;
     if (input.mealId.startsWith('mealdb_')) {
@@ -125,9 +112,6 @@ export class CartService {
   }
 
   static async updateQuantity(userId: string, mealId: string, quantity: number): Promise<ICart> {
-    if (mongoose.connection.readyState !== 1) {
-      return DEMO_CART as ICart;
-    }
 
     const cart = await Cart.findOne({ user: userId });
     if (!cart) {
@@ -161,9 +145,6 @@ export class CartService {
   }
 
   static async clearCart(userId: string): Promise<ICart> {
-    if (mongoose.connection.readyState !== 1) {
-      return DEMO_CART as ICart;
-    }
 
     const cart = await Cart.findOne({ user: userId });
     if (cart) {
@@ -181,9 +162,6 @@ export class CartService {
   }
 
   static async applyCoupon(userId: string, code: string): Promise<{ cart: ICart; discountAmount: number }> {
-    if (mongoose.connection.readyState !== 1) {
-      return { cart: DEMO_CART as ICart, discountAmount: 10 };
-    }
 
     const cart = await Cart.findOne({ user: userId });
     if (!cart || cart.items.length === 0) {
@@ -208,9 +186,6 @@ export class CartService {
   }
 
   static async removeCoupon(userId: string): Promise<ICart> {
-    if (mongoose.connection.readyState !== 1) {
-      return DEMO_CART as ICart;
-    }
 
     const cart = await Cart.findOne({ user: userId });
     if (cart) {

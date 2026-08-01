@@ -148,26 +148,6 @@ export class AuthService {
     accessToken: string;
     refreshToken: string;
   }> {
-    if (mongoose.connection.readyState !== 1) {
-      logger.warn('⚠️ MongoDB disconnected: Using Dev Mode login fallback');
-      const mockUser = {
-        ...DEMO_USER,
-        name: input.email.split('@')[0] || 'Demo User',
-        email: input.email.toLowerCase(),
-      } as unknown as IUser;
-
-      const accessToken = generateAccessToken({
-        userId: DEMO_USER._id.toString(),
-        email: mockUser.email,
-        role: mockUser.role,
-      });
-
-      const refreshToken = generateRefreshToken({
-        userId: DEMO_USER._id.toString(),
-      });
-
-      return { user: mockUser, accessToken, refreshToken };
-    }
 
     const user = await User.findOne({ email: input.email.toLowerCase() }).select('+password');
     if (!user) {
@@ -360,9 +340,6 @@ export class AuthService {
    * Get user profile
    */
   static async getProfile(userId: string): Promise<IUser> {
-    if (mongoose.connection.readyState !== 1) {
-      return DEMO_USER as unknown as IUser;
-    }
 
     const user = await User.findById(userId);
     if (!user) {
@@ -375,9 +352,6 @@ export class AuthService {
    * Update user profile
    */
   static async updateProfile(userId: string, input: UpdateProfileInput): Promise<IUser> {
-    if (mongoose.connection.readyState !== 1) {
-      return { ...DEMO_USER, ...input } as unknown as IUser;
-    }
 
     const user = await User.findByIdAndUpdate(
       userId,

@@ -6,10 +6,11 @@ import cookieParser from 'cookie-parser';
 import swaggerUi from 'swagger-ui-express';
 import { env } from './config/env.js';
 import { swaggerSpec } from './config/swagger.js';
-import { morganStream } from './shared/utils/logger.js';
+import { morganStream, logger } from './shared/utils/logger.js';
 import { globalRateLimiter } from './middleware/rateLimiter.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { NotFoundError } from './shared/errors/appError.js';
+import { connectDB } from './config/db.js';
 
 // Feature Routes
 import authRoutes from './features/auth/auth.routes.js';
@@ -54,6 +55,17 @@ app.use(morgan('combined', { stream: morganStream }));
 
 // Rate Limiting
 app.use('/api', globalRateLimiter);
+
+// Lazy MongoDB connection middleware — MUST be before routes
+// Ensures DB is connected before any route handler runs (critical for Vercel cold starts)
+app.use('/api', async (_req, _res, next) => {
+  try {
+    await connectDB();
+  } catch (err) {
+    logger.warn(`MongoDB connection notice: ${(err as Error).message}`);
+  }
+  next();
+});
 
 // Swagger Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
