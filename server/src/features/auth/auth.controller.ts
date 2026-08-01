@@ -1,6 +1,14 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction, CookieOptions } from 'express';
 import { AuthService } from './auth.service.js';
-import { env } from '../../config/env.js';
+
+// Cross-origin cookie config: frontend and backend are on different Vercel domains,
+// so we need sameSite='none' + secure=true for cookies to be sent cross-origin.
+const getRefreshCookieOptions = (): CookieOptions => ({
+  httpOnly: true,
+  secure: true,
+  sameSite: 'none' as const,
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+});
 
 export class AuthController {
   static async register(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -8,12 +16,7 @@ export class AuthController {
       const { message, user, accessToken, refreshToken } = await AuthService.register(req.body);
 
       if (refreshToken) {
-        res.cookie('refreshToken', refreshToken, {
-          httpOnly: true,
-          secure: env.NODE_ENV === 'production',
-          sameSite: 'strict',
-          maxAge: 7 * 24 * 60 * 60 * 1000,
-        });
+        res.cookie('refreshToken', refreshToken, getRefreshCookieOptions());
       }
 
       res.status(201).json({
@@ -47,12 +50,7 @@ export class AuthController {
       const { user, accessToken, refreshToken } = await AuthService.login(req.body);
 
       // Set HTTP-Only Cookie for Refresh Token
-      res.cookie('refreshToken', refreshToken, {
-        httpOnly: true,
-        secure: env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      });
+      res.cookie('refreshToken', refreshToken, getRefreshCookieOptions());
 
       res.status(200).json({
         success: true,
@@ -78,12 +76,7 @@ export class AuthController {
       const { accessToken, refreshToken: newRefreshToken } =
         await AuthService.refreshToken(incomingRefreshToken);
 
-      res.cookie('refreshToken', newRefreshToken, {
-        httpOnly: true,
-        secure: env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
+      res.cookie('refreshToken', newRefreshToken, getRefreshCookieOptions());
 
       res.status(200).json({
         success: true,
@@ -105,8 +98,8 @@ export class AuthController {
 
       res.clearCookie('refreshToken', {
         httpOnly: true,
-        secure: env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        secure: true,
+        sameSite: 'none' as const,
       });
 
       res.status(200).json({
